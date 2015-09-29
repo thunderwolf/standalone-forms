@@ -3,9 +3,12 @@
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormError;
+
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -23,6 +26,13 @@ $form = $formFactory->createBuilder()
         'constraints' => array(
             new NotBlank(),
             new Length(array('min' => 4)),
+        ),
+    ))
+    ->add('callName', 'text', array(
+        'constraints' => array(
+            new NotBlank(),
+            new Length(array('min' => 4)),
+            new Callback(array('callback' => array('CallNameValidator', 'validate')))
         ),
     ))
     ->add('gender', 'choice', array(
@@ -63,6 +73,20 @@ if (isset($_POST[$form->getName()])) {
     if ($form->isValid()) {
         var_dump('VALID', $form->getData());
         die;
+    }
+}
+
+
+class CallNameValidator
+{
+    public function validate($callName, ExecutionContextInterface $context)
+    {
+        if ($callName == 'admin')
+        {
+            $context->buildViolation('Call Name `' . $callName . '` can not be used')
+                ->atPath('callName')
+                ->addViolation();
+        }
     }
 }
 
